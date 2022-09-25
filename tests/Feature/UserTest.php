@@ -29,10 +29,10 @@ class UserTest extends TestCase
 		private $valid_password = "k3bruxt8spz";
 
     // 36文字以上のパスワード
-		private $invalid_password_more = "";
+		private $invalid_password_more = "ojfu4hd8wo293gwjsouyph0fywfo4jgudhvpg8rlgu5igpeofeprjt";
 
 		// 9文字以下のパスワード
-		private $invalid_password_less = "";
+		private $invalid_password_less = "yuc8rldh";
 
     // 英数字以外のパスワード
     private $invalid_password_non_alpha = "i*fs+<q4o?*";
