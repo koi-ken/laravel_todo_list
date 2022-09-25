@@ -11,6 +11,6 @@ class TopPageController extends Controller
 		@return void
 	*/
 	public function toppage(){
-
+		return view('pages.toppage');
 	}
 }

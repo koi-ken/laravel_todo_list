@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -11,7 +12,11 @@ class TaskController extends Controller
 		@retrun void
 	*/
 	public function task_list(){
-
+		if(Auth::check()){
+			return view('pages.task_list');
+		}else{
+			return view('pages.toppage');
+		}
 	}
 
 

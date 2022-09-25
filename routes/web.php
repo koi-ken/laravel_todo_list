@@ -4,8 +4,10 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\TopPageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ApiUserController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TemporaryUrlController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,11 +20,15 @@ use App\Http\Controllers\TemporaryUrlController;
 |
 */
 
+
 Route::get('/', [TaskController::class, 'task_list']);
-Route::get('/', [TopPageController::class, 'toppage']);
+
+	//Route::get('/', [TopPageController::class, 'toppage']);
+
 Route::get('/signup', [UserController::class, 'signup']);
 Route::get('/login', [UserController::class, 'login']);
 Route::get('/logout', [UserController::class, 'logout']);
 Route::get('/settings', [UserController::class, 'settings']);
 Route::get('/temp_url/{slug}', [TemporaryUrlController::class, 'temp_url']);
-
+Route::post('/api/v1/signup',[ApiUserController::class, 'signup']);
+Route::post('/api/v1/login',[ApiUserController::class, 'login']);

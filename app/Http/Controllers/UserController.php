@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -11,7 +12,7 @@ class UserController extends Controller
 		@return void
 	*/
 	public function signup(){
-
+		return view('pages.signup');
 	}
 
 	/**
@@ -19,15 +20,21 @@ class UserController extends Controller
 		@return void
 	*/
 	public function login(){
-
+		return view('pages.login');
 	}
 
 	/**
 		ログアウトページ
 		@return void
 	*/
-	public function logout(){
+	public function logout(Request $request){
+		Auth::logout();
 
+		$request->session()->invalidate();
+
+		$request->session()->regenerateToken();
+
+		return redirect('/');
 	}
 
 	/**
