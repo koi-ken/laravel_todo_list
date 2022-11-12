@@ -66,7 +66,7 @@ class ApiUserController extends Controller
 		
 		if(empty($user)){
 			return response()->json([
-				'message' => 'failure',
+				'message' => 'failure - not exists',
 			]);
 		}
 
@@ -82,9 +82,10 @@ class ApiUserController extends Controller
 		}
 
 		return response()->json([
-			'message' => 'failure',
+			'message' => 'failure - not authenticated.',
 		]);
 	}
+
 
 	/**
 		ユーザー情報を取得

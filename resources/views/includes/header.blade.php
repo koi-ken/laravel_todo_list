@@ -1,11 +1,13 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-5 ctm-navbar-block">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
 	<div class="container-fluid fw-light">
-		ToDoリスト
-		<button class="navbar-toggler" type="button" data-bs-toggle="collapse">
+		<a class="navbar-brand" href="/">
+			ToDoリスト
+		</a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
-			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
 				@auth
 				<li class="nav-item">
 					<a href="/logout">ログアウト</a>

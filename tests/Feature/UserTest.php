@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
+use App\Models\User;
+use Carbon\Carbon;
 
 class UserTest extends TestCase
 {
@@ -38,813 +41,41 @@ class UserTest extends TestCase
     private $invalid_password_non_alpha = "i*fs+<q4o?*";
 
 		/**
-		 * email、useranme、password共に空のデータを送信
+		 * 新規登録時に、email、useranme、password共に間違った組み合わせのデータを送信
 		 *
 		 */
-    public function test_post_request_with_empty_data()
+
+    public function test_post_request_with_invalid_data()
     {
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' =>'',
-					'password' => ''
-				]);
+				$email_arr = ['', $this->invalid_email, $this->valid_email];
+				$username_arr = ['', $this->invalid_username_non_alpha, $this->invalid_username_more, $this->valid_username];
+				$password_arr = ['', $this->invalid_password_more, $this->invalid_password_less, $this->valid_password];
 
-        $response->assertStatus(422);
+				for($i = 0; $i < count($email_arr); $i++){
+					for($j = 0; $j < count($username_arr); $j++){
+						for($k = 0; $k < count($password_arr); $k++){
+							if($i !== count($email_arr) - 1 && $j !== count($username_arr) - 1 && $k !== count($password_arr) - 1){
 
-				$response->dump();
-    }
+								$response = $this->postJson('/api/v1/signup', [
+									'email' => $email_arr[$i],
+									'username' => $username_arr[$j],
+									'password' => $password_arr[$k]
+								]);
 
-		/**
-		 * 不正なemail、空のuseranme、空のpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_empty_username_and_empty_password()
-    {
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' =>'',
-					'password' => ''
-				]);
+								$response->assertStatus(422);
 
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 空のemail、不正なuseranme、空のpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_empty_email_and_invalid_username_and_empty_password()
-    {
-				// 英数字以外の文字列
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' => $this->invalid_username_non_alpha,
-					'password' => ''
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上の文字列
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' => $this->invalid_username_more,
-					'password' => ''
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 空のemail、空のuseranme、不正なpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_empty_email_and_empty_username_and_invalid_password()
-    {
-				// パスワードが9文字以下の場合
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' =>'',
-					'password' => $this->invalid_password_less
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// パスワードが36文字以下の場合
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' =>'',
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// パスワードが英数字じゃない文字が含まれていた場合
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' =>'',
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-
-    }
-
-		/**
-		 * 不正のemail、不正のuseranme、空のpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_invalid_username_and_empty_password()
-    {
-				// 英数字以外の文字列
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => ''
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-
-				// 36文字以上の文字列
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->invalid_username_more,
-					'password' => ''
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 空のemail、不正のuseranme、不正のpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_empty_email_and_invalid_username_and_invalid_password()
-    {
-				// 英数字以外の文字列 + 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 英数字以外の文字列 + 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上の文字列 + 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' => $this->invalid_username_more,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上の文字列 + 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => '',
-					'username' => $this->invalid_username_more,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 不正なemail、空のuseranme、不正なpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_empty_username_and_invalid_password()
-    {
-				// パスワードが英数字ではない
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' =>'',
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// パスワードが36文字以上
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' =>'',
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// パスワードが9文字以上
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' =>'',
-					'password' => $this->invalid_password_less
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 不正なemail、不正なuseranme、不正なpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_invalid_username_and_invalid_password()
-    {
-				// 英数字以外の文字列 + 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 英数字以外の文字列 + 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上の文字列 + 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->invalid_username_more,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上の文字列 + 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->invalid_username_more,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
+							}
+						}
+					}
+				}
     }
 
 
 		/**
-		 * 正しいemail、空のuseranme、空のpasswordのデータを送信
+		 * 新規登録時に、email、useranme、password共にの正しいデータを送信
 		 *
 		 */
-    public function test_post_request_with_valid_email_and_empty_username_and_empty_password()
-    {
-				// 英数字以外の文字列 + 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => "",
-					'password' => ""
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 空のemail、正しいuseranme、空のpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_empty_email_and_valid_username_and_empty_password()
-    {
-				
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => "",
-					'username' => $this->valid_username,
-					'password' => ""
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-
-		/**
-		 * 空のemail、空のuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_empty_email_and_empty_username_and_valid_password()
-    {
-				
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => "",
-					'username' => "",
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-
-		/**
-		 * 正しいemail、正しいuseranme、空のpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_valid_email_and_valid_username_and_empty_password()
-    {
-				
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->valid_username,
-					'password' => ""
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-
-		/**
-		 * 正しいemail、空のuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_valid_email_and_empty_username_and_valid_password()
-    {
-				
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => "",
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 空のemail、正しいuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_empty_email_and_valid_username_and_valid_password()
-    {
-				
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => "",
-					'username' => $this->valid_username,
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 正しいemail、不正なuseranme、不正なpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_valid_email_and_invalid_username_and_invalid_password()
-    {
-				// 英数字以外のユーザー名 + 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 英数字以外のユーザー名 + 36字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 英数字以外のユーザー名 + 9文字以下のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->invalid_password_less
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以外のユーザー名 + 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_more,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以外のユーザー名 + 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_more,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以外のユーザー名 + 9文字以下のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_more,
-					'password' => $this->invalid_password_less
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-
-		/**
-		 * 不正なemail、正しいuseranme、不正なpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_valid_username_and_invalid_password()
-    {
-				
-				// 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 9文字以下のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_less
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-
-
-		/**
-		 * 不正なemail、不正なuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_invalid_username_and_valid_password()
-    {
-				
-				// 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->invalid_username_more,
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-    }
-
-
-		/**
-		 * 正しいemail、正しいuseranme、不正なpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_valid_email_and_valid_username_and_invalid_password()
-    {
-				
-				// 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 9字以下のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_less
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 正しいemail、不正なuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_valid_email_and_invalid_username_and_valid_password()
-    {
-				
-				// 英数字以外のユーザー名
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上のユーザー名
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_more,
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-
-		/**
-		 * 不正なemail、正しいuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_valid_username_and_valid_password()
-    {
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->valid_username,
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-
-		/**
-		 * 正しいemail、不正なuseranme、空のpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_valid_email_and_invalid_username_and_empty_password()
-    {
-				
-				// 英数字以外のユーザー名
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_non_alpha,
-					'password' => ""
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上のユーザー名
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => $this->invalid_username_more,
-					'password' => ""
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 正しいemail、空のuseranme、不正なpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_valid_email_and_empty_username_and_invalid_password()
-    {
-				
-				// 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => "",
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => "",
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 9文字以下のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->valid_email,
-					'username' => "",
-					'password' => $this->invalid_password_less
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-
-		/**
-		 * 不正なemail、空のuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_empty_username_and_valid_password()
-    {
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => "",
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 不正なemail、正しいuseranme、空のpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_invalid_email_and_valid_username_and_empty_password()
-    {
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => $this->invalid_email,
-					'username' => $this->valid_username,
-					'password' => ""
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 空のemail、正しいuseranme、不正なpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_empty_email_and_valid_username_and_invalid_password()
-    {
-				// 英数字以外のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => "",
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_non_alpha
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => "",
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_more
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 9文字以下のパスワード
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => "",
-					'username' => $this->valid_username,
-					'password' => $this->invalid_password_less
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 空のemail、不正なuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_empty_email_and_invalid_username_and_valid_password()
-    {
-				// 英数字以外のユーザー名
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => "",
-					'username' => $this->invalid_username_non_alpha,
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-
-				// 36文字以上のユーザー名
-        $response = $this->postJson('/api/v1/signup', [
-					'email' => "",
-					'username' => $this->invalid_username_more,
-					'password' => $this->valid_password
-				]);
-
-        $response->assertStatus(422);
-
-				$response->dump();
-    }
-
-		/**
-		 * 正しいemail、正しいuseranme、正しいpasswordのデータを送信
-		 *
-		 */
-    public function test_post_request_with_valid_email_and_valid_username_and_valid_password()
+    public function test_post_request_with_valid_data()
     {
         $response = $this->postJson('/api/v1/signup', [
 					'email' => $this->valid_email,
@@ -854,6 +85,170 @@ class UserTest extends TestCase
 
         $response->assertStatus(200);
 
-				$response->dump();
     }
+
+		/**
+		 * 間違ったusernameと正しいpasswordでデータ送信しログイン
+     * 間違ったemailと間違ったpasswordでデータ送信しログイン
+		 *
+		 */
+    public function test_post_login_invalid_username_or_email_and_invalid_password()
+    {
+
+				// ファクトリでユーザーデータを、属性のオーバーライドで作成する
+				$user = User::factory()->create([
+					'email' => $this->valid_email,
+					'username' => $this->valid_username,
+					'password' => Hash::make($this->valid_password),
+					'created_at' => Carbon::now(),
+				]);
+
+				$email_arr = ['', $this->invalid_email, $this->valid_email];
+				$username_arr = ['', $this->invalid_username_non_alpha, $this->invalid_username_more, $this->valid_username];
+				$password_arr = ['', $this->invalid_password_more, $this->invalid_password_less, $this->valid_password];
+
+				for($j = 0; $j < count($username_arr); $j++){
+					for($k = 0; $k < count($password_arr); $k++){
+						if($j !== count($username_arr) - 1 && $k !== count($password_arr) - 1){
+
+							$response = $this->postJson('/api/v1/login', [
+													'email_or_username' => $username_arr[$j],
+													'password' => $password_arr[$k],
+													'remember_me' => true
+							]);
+
+
+							$response->assertStatus(200)
+							->assertExactJson([
+								'message' => 'failure - not exists',
+							]);
+
+						}
+					}
+				}
+
+
+				for($j = 0; $j < count($email_arr); $j++){
+					for($k = 0; $k < count($password_arr); $k++){
+						if($j !== count($email_arr) - 1 && $k !== count($password_arr) - 1){
+
+							$response = $this->postJson('/api/v1/login', [
+													'email_or_username' => $email_arr[$j],
+													'password' => $password_arr[$k],
+													'remember_me' => true
+							]);
+
+							$response->assertStatus(200)
+							->assertExactJson([
+								'message' => 'failure - not exists',
+							]);
+
+						}
+					}
+				}
+    }
+
+
+		/**
+		 * 正しいusernameと正しいpasswordでデータ送信しログイン
+		 *
+		 */
+    public function test_post_login_valid_username_and_valid_password()
+    {
+
+				// ファクトリでユーザーデータを、属性のオーバーライドで作成する
+				$user = User::factory()->create([
+					'email' => $this->valid_email,
+					'username' => $this->valid_username,
+					'password' => Hash::make($this->valid_password),
+					'created_at' => Carbon::now(),
+				]);
+
+				$response = $this->actingAs($user, 'web')
+										->postJson('/api/v1/login', [
+					'email_or_username' => $this->valid_username,
+					'password' => $this->valid_password,
+					'remember_me' => true
+				]);
+
+
+				$response
+					->assertStatus(200)
+					->assertExactJson([
+						'message' => 'success',
+					]);
+    }
+
+		/**
+		 * 正しいemailと正しいpasswordでデータ送信しログイン
+		 *
+		 */
+    public function test_post_login_valid_email_and_valid_password()
+    {
+
+				// ファクトリでユーザーデータを、属性のオーバーライドで作成する
+				$user = User::factory()->create([
+					'email' => $this->valid_email,
+					'username' => $this->valid_username,
+					'password' => Hash::make($this->valid_password),
+					'created_at' => Carbon::now(),
+				]);
+
+				$response = $this->actingAs($user, 'web')
+										->postJson('/api/v1/login', [
+					'email_or_username' => $this->valid_email,
+					'password' => $this->valid_password,
+					'remember_me' => true
+				]);
+
+				$response
+					->assertStatus(200)
+					->assertExactJson([
+						'message' => 'success',
+					]);
+
+    }
+
+		/**
+		 * ログインページへアクセスする
+		 *
+		 */
+		public function test_access_login(){
+
+			$response = $this->get('/login');
+			$response->assertStatus(200);
+
+		}
+
+		/**
+		 * 新規登録ページへアクセスする
+		 *
+		 */
+		public function test_access_signup(){
+
+			$response = $this->get('/signup');
+			$response->assertStatus(200);
+
+		}
+
+		/**
+		 * ログインした状態でログアウトする
+		 *
+		 */
+    public function test_logout()
+    {
+				// ファクトリでユーザーデータを、属性のオーバーライドで作成する
+				$user = User::factory()->create([
+					'email' => $this->valid_email,
+					'username' => $this->valid_username,
+					'password' => Hash::make($this->valid_password),
+					'created_at' => Carbon::now(),
+				]);
+
+        $response = $this->actingAs($user, 'web')->get('/logout');
+
+        // リダイレクトする
+				$response->assertStatus(302);
+    }
+
 }

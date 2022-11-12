@@ -23,8 +23,6 @@ Route::post('/v1/login', [ApiUserController::class, 'login']);
 Route::get('/v1/fetch_userinfo', [ApiUserController::class, 'fetch_userinfo']);
 Route::post('/v1/edit_userinfo', [ApiUserController::class, 'edit_userinfo']);
 Route::post('/v1/delete_userinfo', [ApiUserController::class, 'delete_userinfo']);
-Route::get('/v1/fetch_tasks', [ApiTaskController::class, 'fetch_tasks']);
 Route::get('/v1/fetch_task', [ApiTaskController::class, 'fetch_task']);
-Route::post('/v1/toggle_task_achive', [ApiTaskController::class, 'toggle_task_achive']);
 Route::post('/v1/edit_task', [ApiTaskController::class, 'edit_task']);
 Route::post('/v1/delete_task', [ApiTaskController::class, 'delete_task']);

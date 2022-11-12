@@ -6,6 +6,7 @@ use App\Http\Controllers\TopPageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ApiUserController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\ApiTaskController;
 use App\Http\Controllers\TemporaryUrlController;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,3 +33,6 @@ Route::get('/settings', [UserController::class, 'settings']);
 Route::get('/temp_url/{slug}', [TemporaryUrlController::class, 'temp_url']);
 Route::post('/api/v1/signup',[ApiUserController::class, 'signup']);
 Route::post('/api/v1/login',[ApiUserController::class, 'login']);
+Route::get('/api/v1/fetch_tasks', [ApiTaskController::class, 'fetch_tasks']);
+Route::post('/api/v1/add_task', [ApiTaskController::class, 'add_task'])->middleware('auth');
+Route::post('/api/v1/toggle_task_achive', [ApiTaskController::class, 'toggle_task_achive'])->middleware('auth');
