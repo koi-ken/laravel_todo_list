@@ -1,4 +1,5 @@
 (function(){
+
 	$('#signup_btn').on('click', function(){
 
 		var email = $('#inputEmail').val();
@@ -185,31 +186,41 @@
 	});
 
 	$('#add_task_btn').on('click', function(){
-		var task = $('#task_form').val();
-		var csrf_token = $('input[name="_token"]').val();
 
+		// タスクに何も入っていなければ終了
 		if(task === ''){
 			alert("タスクが入力されていません");
 			return false;
 		}
 
+		// 渡すデータを取得する
+		var task = $('#task_form').val();
+		var csrf_token = $('meta[name="csrf-token"]').attr('content');
+
+		// ボタンのクリックを禁止する
 		$('#add_task_btn').prop('disabled', true);
 
-		var sp = document.createElement('span');
-		sp.classList.add('spinner-border', 'spinner-border-sm');
-		sp.role = 'status';
-		sp.ariaHidden = 'true';
-		document.getElementById('add_task_btn').replaceChild(sp, document.getElementById('add_task_btn').getElementsByTagName("svg")[0]);
+		// ボタンにローディングアイコンを追加する
+		$('#add_task_btn').html("");
+		$('<span>').attr({
+			class: 'spinner-border spinner-border-sm',
+			role: 'status',
+			ariaHidden: 'true',
+		}).appendTo('#add_task_btn');
 
 		axios.post('/api/v1/add_task',{
 			task: task,
-			_token: csrf_token,
+			"X-CSRF-TOKEN": csrf_token
 		}).then(function(res){
 			if(res.data.message === 'success'){
 
 				// データを追加
-				var parent_ele = document.createElement('div');
-				parent_ele.classList.add('rounded','fw-light','bg-white','py-3','px-3','mx-3','my-2','shadow-sm');
+				var flex = document.createElement('div');
+				flex.classList.add('d-flex', 'rounded','fw-light','bg-white','py-3','px-3','mx-3','my-2','shadow-sm');
+
+				var block_one = document.createElement('div');
+				block_one.classList.add('d-flex','align-items-center', 'flex-grow-1');
+
 				var child_ele = document.createElement('div');
 				child_ele.className = 'form-check';
 				var input = document.createElement('input');
@@ -219,10 +230,36 @@
 				label.className = 'form-check-label';
 				label.dataset.taskId = res.data.id;
 				label.appendChild(document.createTextNode(task));
+
 				child_ele.appendChild(input);
 				child_ele.appendChild(label);
-				parent_ele.appendChild(child_ele);
-				document.getElementById('task_list').prepend(parent_ele);
+				block_one.appendChild(child_ele);
+
+				var block_two = document.createElement('div');
+				block_two.classList.add('d-flex', 'align-items-center', 'open_edit_menu');
+				block_two.dataset.bsToggle = "offcanvas";
+				block_two.dataset.bsTarget = "#offcanvasEdit";
+
+				var edit_svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+				edit_svg.setAttribute('width','22');
+				edit_svg.setAttribute('height','22');
+				edit_svg.setAttribute('fill', 'currentColor');
+				edit_svg.setAttribute('viewBox', '0 0 16 16');
+				edit_svg.classList.add('bi','bi-pencil-square');
+				edit_svg.style.cursor = "pointer";
+				var edit_path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+				edit_path.setAttribute('d','M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z');
+				var edit_path_two = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+				edit_path_two.setAttribute('fill-rule','evenodd');
+				edit_path_two.setAttribute('d','M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z');
+				edit_svg.appendChild(edit_path);
+				edit_svg.appendChild(edit_path_two);
+				block_two.appendChild(edit_svg);
+
+				flex.appendChild(block_one);
+				flex.appendChild(block_two);
+
+				document.getElementById('task_list').prepend(flex);
 
 				$('#task_form').val("")
 			}
@@ -292,6 +329,7 @@
 	$(window).on('load', function(){
 		var page = 1;
 		loading_data(page);
+		create_offcanvas();
 	});
 
 	$('#loading_btn').on('click', function(){
@@ -324,28 +362,53 @@
 							through = "";
 						}
 
-						var parent_ele = document.createElement('div');
-						parent_ele.classList.add('rounded', 'fw-light', 'bg-white', 'py-3', 'px-3', 'mx-3', 'my-2', 'shadow-sm');
+
+						// データを追加
+						var flex = document.createElement('div');
+						flex.classList.add('d-flex', 'rounded','fw-light','bg-white','py-3','px-3','mx-3','my-2','shadow-sm');
+
+						var block_one = document.createElement('div');
+						block_one.classList.add('d-flex','align-items-center', 'flex-grow-1');
+
 						var child_ele = document.createElement('div');
 						child_ele.className = 'form-check';
 						var input = document.createElement('input');
-						input.classList.add('form-check-input', 'todo-checkbox');
+						input.classList.add('form-check-input','todo-checkbox');
 						input.type = 'checkbox';
-						if(checked !== ''){
-							input.checked = true;
-						}
 						var label = document.createElement('label');
-						if(through !== ''){
-							label.classList.add('form-check-label',through);
-						}else{
-							label.className = 'form-check-label';
-						}
+						label.className = 'form-check-label';
 						label.dataset.taskId = tasks[i].id;
 						label.appendChild(document.createTextNode(tasks[i].task));
-						child_ele.prepend(label);
-						child_ele.prepend(input);
-						parent_ele.prepend(child_ele);
-						document.getElementById('task_list').append(parent_ele);
+
+						child_ele.appendChild(input);
+						child_ele.appendChild(label);
+						block_one.appendChild(child_ele);
+
+						var block_two = document.createElement('div');
+						block_two.classList.add('d-flex', 'align-items-center', 'open_edit_menu');
+						block_two.dataset.bsToggle = "offcanvas";
+						block_two.dataset.bsTarget = "#offcanvasEdit";
+
+						var edit_svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+						edit_svg.setAttribute('width','22');
+						edit_svg.setAttribute('height','22');
+						edit_svg.setAttribute('fill', 'currentColor');
+						edit_svg.setAttribute('viewBox', '0 0 16 16');
+						edit_svg.classList.add('bi','bi-pencil-square');
+						edit_svg.style.cursor = "pointer";
+						var edit_path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+						edit_path.setAttribute('d','M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z');
+						var edit_path_two = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+						edit_path_two.setAttribute('fill-rule','evenodd');
+						edit_path_two.setAttribute('d','M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z');
+						edit_svg.appendChild(edit_path);
+						edit_svg.appendChild(edit_path_two);
+						block_two.appendChild(edit_svg);
+
+						flex.appendChild(block_one);
+						flex.appendChild(block_two);
+
+						document.getElementById('task_list').prepend(flex);
 					}
 
 					if(tasks.length !== 0){
@@ -379,4 +442,100 @@
 		}
 	}
 
+	$(document).on('click', '.open_edit_menu', function(){
+
+		var idx = $('.open_edit_menu').index(this);
+
+		$('#edit_task_input_textarea').val('');
+		$('#edit_task_task_id').val('');
+		$('#idx_pos_data').val('');
+
+		$('#edit_task_input_textarea').val($('label.form-check-label').eq(idx).text());
+		$('#edit_task_task_id').val($('label.form-check-label').eq(idx).data("task-id"));
+		$('#idx_pos_data').val(idx);
+
+	});
+
+	function create_offcanvas(){
+
+		$('body').append(' \
+			<div class="offcanvas offcanvas-start" id="offcanvasEdit" tabindex="-1" aria-labelledby="offcanvasLabel"> \
+				<div class="offcanvas-header"> \
+					<h5 class="offcanvas-title">タスク編集</h5> \
+					<button class="btn-close text-reset" data-bs-dismiss="offcanvas"></button> \
+				</div> \
+				<div class="offcanvas-body"> \
+					<form> \
+						<div class="row mb-3"> \
+							<div class="col-sm-12"> \
+								<textarea class="form-control" id="edit_task_input_textarea"></textarea> \
+							</div> \
+						</div> \
+						<input type="hidden" id="edit_task_task_id" /> \
+						<input type="hidden" id="idx_pos_data" /> \
+						<div class="d-flex"> \
+							<button type="button" id="edit_task_btn" class="btn btn-primary ms-auto">編集</button> \
+						</div> \
+					</form> \
+				</div> \
+			</div> \
+		');
+
+	}
+
+	$(document).on('click', '#edit_task_btn', function(){
+
+		if($('#edit_task_input_textarea').val() === ''){
+			alert("タスクが何も入っていません");
+			return false;
+		}
+
+		// ボタンをクリック禁止にする
+		$('#edit_task_btn').prop('disabled', true);
+
+		// ボタンにローディングアイコンを追加する
+		$('#edit_task_btn').text("");
+		$('<span>').attr({
+			class: 'spinner-border spinner-border-sm',
+			role: 'status',
+			ariaHidden: 'true',
+		}).appendTo('#edit_task_btn');
+
+		// 必要なデータを取得
+		var task = $('#edit_task_input_textarea').val();
+		var task_id = $('#edit_task_task_id').val();
+		var csrf_token = $('meta[name="csrf-token"]').attr('content');
+
+		axios.post('/api/v1/edit_task',{
+			task: task,
+			task_id: task_id,
+			"X-CSRF-TOKEN": csrf_token,
+		}).then(function(res){
+			if(res.data.message === 'success'){
+
+				// リスト内のデータを変更
+				var idx = $('#idx_pos_data').val();
+				$('.form-check-label').eq(idx).text(task);
+
+			}else if(res.data.message === 'not found'){
+				alert("編集できませんでした。やり直してください。");
+			}
+
+		}).catch(function(err){
+
+			var res = err.response.status;
+
+			alert("編集できませんでした。やり直してください。");
+
+		}).finally(function(){
+
+			// ボタンのクリックを解除する
+			$('#edit_task_btn').prop('disabled', false);
+
+			// ボタンのローディングアイコンを解除する
+			$('#edit_task_btn').empty();
+			$('#edit_task_btn').text("編集");
+
+		});
+	});
 })();

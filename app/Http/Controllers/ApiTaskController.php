@@ -46,7 +46,7 @@ class ApiTaskController extends Controller
 	}
 
 	/**
-		単一のタスクを取得
+		タスクを追加
 		@param
 		@return 
 	*/
@@ -98,8 +98,30 @@ class ApiTaskController extends Controller
 		タスクを編集
 		@return
 	*/
-	public function edit_task(){
+	public function edit_task(Request $request){
+		$task = $request->input('task');
+		$task_id = $request->input('task_id');
 
+		$validated = $request->validate([
+			'task' => 'required',
+			'task_id' => 'required',
+		]);
+
+		$user = Auth::user();
+		$affected = DB::table('tasks')
+								->where('id', $task_id)
+								->where('user_id', $user->id)
+								->update(['task' => $task]);
+
+    if($affected == 0){
+			return response()->json([
+				'message' => 'not found',
+			]);
+    }
+
+		return response()->json([
+			'message' => 'success',
+		]);
 	}
 
 	/**
