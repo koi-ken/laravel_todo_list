@@ -37,3 +37,4 @@ Route::get('/api/v1/fetch_tasks', [ApiTaskController::class, 'fetch_tasks']);
 Route::post('/api/v1/add_task', [ApiTaskController::class, 'add_task'])->middleware('auth');
 Route::post('/api/v1/toggle_task_achive', [ApiTaskController::class, 'toggle_task_achive'])->middleware('auth');
 Route::post('/api/v1/edit_task', [ApiTaskController::class, 'edit_task'])->middleware('auth');
+Route::post('/api/v1/delete_task', [ApiTaskController::class, 'delete_task'])->middleware('auth');

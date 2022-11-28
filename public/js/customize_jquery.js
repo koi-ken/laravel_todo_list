@@ -1,5 +1,8 @@
 (function(){
 
+  // モーダルをJavaScriptで操作するためにオブジェクトを入れる変数
+	var myModal;
+
 	$('#signup_btn').on('click', function(){
 
 		var email = $('#inputEmail').val();
@@ -135,7 +138,6 @@
 			if(res === 422){
 				var errors = err.response.data.errors;
 				
-
 				if(errors.email){
 					$('#inputEmail').removeClass('is-valid');
 					$('#inputEmail').addClass('is-invalid');
@@ -214,61 +216,41 @@
 		}).then(function(res){
 			if(res.data.message === 'success'){
 
-				// データを追加
-				var flex = document.createElement('div');
-				flex.classList.add('d-flex', 'rounded','fw-light','bg-white','py-3','px-3','mx-3','my-2','shadow-sm');
-
-				var block_one = document.createElement('div');
-				block_one.classList.add('d-flex','align-items-center', 'flex-grow-1');
-
-				var child_ele = document.createElement('div');
-				child_ele.className = 'form-check';
-				var input = document.createElement('input');
-				input.classList.add('form-check-input','todo-checkbox');
-				input.type = 'checkbox';
-				var label = document.createElement('label');
-				label.className = 'form-check-label';
-				label.dataset.taskId = res.data.id;
-				label.appendChild(document.createTextNode(task));
-
-				child_ele.appendChild(input);
-				child_ele.appendChild(label);
-				block_one.appendChild(child_ele);
-
-				var block_two = document.createElement('div');
-				block_two.classList.add('d-flex', 'align-items-center', 'open_edit_menu');
-				block_two.dataset.bsToggle = "offcanvas";
-				block_two.dataset.bsTarget = "#offcanvasEdit";
-
-				var edit_svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-				edit_svg.setAttribute('width','22');
-				edit_svg.setAttribute('height','22');
-				edit_svg.setAttribute('fill', 'currentColor');
-				edit_svg.setAttribute('viewBox', '0 0 16 16');
-				edit_svg.classList.add('bi','bi-pencil-square');
-				edit_svg.style.cursor = "pointer";
-				var edit_path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-				edit_path.setAttribute('d','M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z');
-				var edit_path_two = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-				edit_path_two.setAttribute('fill-rule','evenodd');
-				edit_path_two.setAttribute('d','M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z');
-				edit_svg.appendChild(edit_path);
-				edit_svg.appendChild(edit_path_two);
-				block_two.appendChild(edit_svg);
-
-				flex.appendChild(block_one);
-				flex.appendChild(block_two);
-
-				document.getElementById('task_list').prepend(flex);
+				// データを追加する
+				$('#task_list').prepend(' \
+					<div class="d-flex rounded fw-light bg-white py-3 px-3 mx-3 my-2 shadow-sm"> \
+						<div class="d-flex align-items-center flex-grow-1"> \
+							<div class="form-check"> \
+								<input type="checkbox" class="form-check-input todo-checkbox" /> \
+								<label class="form-check-label" data-task-id="' + res.data.id + '">' + task + '</label> \
+							</div> \
+						</div> \
+						<div class="d-flex align-items-center ms-3 open_edit_menu" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEdit"> \
+							<svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16" class="bi bi-pencil-square" style="cursor: pointer;"> \
+								<path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path> \
+								<path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path> \
+							</svg> \
+						</div> \
+						<div class="d-flex align-items-center ms-3 open_delete_modal" data-bs-toggle="modal" data-bs-target="#deleteModal"> \
+							<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16" style="cursor: pointer;"> \
+								<path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/> \
+							</svg> \
+						</div> \
+					</div> \
+				');
 
 				$('#task_form').val("")
 			}
 		}).catch(function(err){
 
-			var res = err.response.status;
+			var status = err.response.status;
 
-			if(res === 422){
-
+			// CSRF token mismatch
+			if(status === 419){
+        // 現在のページをリダイレクトさせる
+				location.href = location.pathname;
+			}else{
+				alert("追加できませんでした。やり直してください。");
 			}
 
 		}).finally(function(){
@@ -330,6 +312,7 @@
 		var page = 1;
 		loading_data(page);
 		create_offcanvas();
+		create_modal();
 	});
 
 	$('#loading_btn').on('click', function(){
@@ -362,53 +345,27 @@
 							through = "";
 						}
 
-
-						// データを追加
-						var flex = document.createElement('div');
-						flex.classList.add('d-flex', 'rounded','fw-light','bg-white','py-3','px-3','mx-3','my-2','shadow-sm');
-
-						var block_one = document.createElement('div');
-						block_one.classList.add('d-flex','align-items-center', 'flex-grow-1');
-
-						var child_ele = document.createElement('div');
-						child_ele.className = 'form-check';
-						var input = document.createElement('input');
-						input.classList.add('form-check-input','todo-checkbox');
-						input.type = 'checkbox';
-						var label = document.createElement('label');
-						label.className = 'form-check-label';
-						label.dataset.taskId = tasks[i].id;
-						label.appendChild(document.createTextNode(tasks[i].task));
-
-						child_ele.appendChild(input);
-						child_ele.appendChild(label);
-						block_one.appendChild(child_ele);
-
-						var block_two = document.createElement('div');
-						block_two.classList.add('d-flex', 'align-items-center', 'open_edit_menu');
-						block_two.dataset.bsToggle = "offcanvas";
-						block_two.dataset.bsTarget = "#offcanvasEdit";
-
-						var edit_svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-						edit_svg.setAttribute('width','22');
-						edit_svg.setAttribute('height','22');
-						edit_svg.setAttribute('fill', 'currentColor');
-						edit_svg.setAttribute('viewBox', '0 0 16 16');
-						edit_svg.classList.add('bi','bi-pencil-square');
-						edit_svg.style.cursor = "pointer";
-						var edit_path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-						edit_path.setAttribute('d','M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z');
-						var edit_path_two = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-						edit_path_two.setAttribute('fill-rule','evenodd');
-						edit_path_two.setAttribute('d','M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z');
-						edit_svg.appendChild(edit_path);
-						edit_svg.appendChild(edit_path_two);
-						block_two.appendChild(edit_svg);
-
-						flex.appendChild(block_one);
-						flex.appendChild(block_two);
-
-						document.getElementById('task_list').prepend(flex);
+						$('#task_list').append(' \
+							<div class="d-flex rounded fw-light bg-white py-3 px-3 mx-3 my-2 shadow-sm"> \
+								<div class="d-flex align-items-center flex-grow-1"> \
+									<div class="form-check"> \
+										<input type="checkbox" class="form-check-input todo-checkbox" /> \
+										<label class="form-check-label" data-task-id="' + tasks[i].id + '">' + tasks[i].task + '</label> \
+									</div> \
+								</div> \
+								<div class="d-flex align-items-center ms-3 open_edit_menu" data-bs-toggle="offcanvas" data-bs-target="#offcanvasEdit"> \
+									<svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16" class="bi bi-pencil-square" style="cursor: pointer;"> \
+										<path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path> \
+										<path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"></path> \
+									</svg> \
+								</div> \
+								<div class="d-flex align-items-center ms-3 open_delete_modal" data-bs-toggle="modal" data-bs-target="#deleteModal"> \
+									<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16" style="cursor: pointer;"> \
+										<path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/> \
+									</svg> \
+								</div> \
+							</div> \
+						');
 					}
 
 					if(tasks.length !== 0){
@@ -431,11 +388,17 @@
 					}
 				}
 			}).catch(function(err){
-				var res = err.response.status;
 
-				if(res === 422){
+				var status = err.response.status;
 
+				// CSRF token mismatch
+				if(status === 419){
+	        // 現在のページをリダイレクトさせる
+					location.href = location.pathname;
+				}else{
+					alert("読み込みできませんでした。やり直してください。");
 				}
+
 			}).finally(function(){
 
 			});
@@ -483,6 +446,32 @@
 
 	}
 
+  function create_modal(){
+		$('body').append(' \
+			<div class="modal fade" tabindex="-1" id="deleteModal"> \
+			  <div class="modal-dialog modal-dialog-centered"> \
+			    <div class="modal-content"> \
+			      <div class="modal-header"> \
+			        <h5 class="modal-title">このタスクを削除しますか？</h5> \
+			        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> \
+			      </div> \
+			      <div class="modal-body"> \
+			        <div id="delete_dialog_body"></div> \
+							<input type="hidden" id="delete_task_id" /> \
+							<input type="hidden" id="idx_delete_pos_data" /> \
+			      </div> \
+			      <div class="modal-footer"> \
+			        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button> \
+			        <button type="button" class="btn btn-danger" id="delete_task_btn">削除</button> \
+			      </div> \
+			    </div> \
+			  </div> \
+			</div> \
+		');
+
+		myModal = new bootstrap.Modal(document.getElementById('deleteModal'), null)
+	}
+
 	$(document).on('click', '#edit_task_btn', function(){
 
 		if($('#edit_task_input_textarea').val() === ''){
@@ -523,9 +512,15 @@
 
 		}).catch(function(err){
 
-			var res = err.response.status;
+			var status = err.response.status;
 
-			alert("編集できませんでした。やり直してください。");
+			// CSRF token mismatch
+			if(status === 419){
+        // 現在のページをリダイレクトさせる
+				location.href = location.pathname;
+			}else{
+				alert("編集できませんでした。やり直してください。");
+			}
 
 		}).finally(function(){
 
@@ -535,6 +530,81 @@
 			// ボタンのローディングアイコンを解除する
 			$('#edit_task_btn').empty();
 			$('#edit_task_btn').text("編集");
+
+		});
+	});
+
+	$(document).on('click', '.open_delete_modal', function(){
+		var idx = $('.open_delete_modal').index(this);
+
+		$('#delete_dialog_body').text('');
+		$('#delete_task_id').val('');
+		$('#idx_delete_pos_data').val('');
+
+		$('#delete_dialog_body').text($('label.form-check-label').eq(idx).text());
+		$('#delete_task_id').val($('label.form-check-label').eq(idx).data("task-id"));
+		$('#idx_delete_pos_data').val(idx);
+	});
+
+	$(document).on('click', '#delete_task_btn', function(){
+		if($('#delete_dialog_body').text() === ''){
+			alert("タスクが何も入っていません");
+			return false;
+		}
+
+		// ボタンをクリック禁止にする
+		$('#delete_task_btn').prop('disabled', true);
+
+		// ボタンにローディングアイコンを追加する
+		$('#delete_task_btn').text("");
+		$('<span>').attr({
+			class: 'spinner-border spinner-border-sm',
+			role: 'status',
+			ariaHidden: 'true',
+		}).appendTo('#delete_task_btn');
+
+		// 必要なデータを取得
+		var task_id = $('#delete_task_id').val();
+		var csrf_token = $('meta[name="csrf-token"]').attr('content');
+
+
+		axios.post('/api/v1/delete_task',{
+			task_id: task_id,
+			"X-CSRF-TOKEN": csrf_token,
+		}).then(function(res){
+			if(res.data.message === 'success'){
+
+				// リスト内のデータを削除
+				var idx = $('#idx_delete_pos_data').val();
+				$('#task_list > div').eq(idx).remove();
+
+				// モーダルを閉じる
+				myModal.hide();
+
+			}else if(res.data.message === 'not found'){
+				alert("削除できませんでした。やり直してください。");
+			}
+
+		}).catch(function(err){
+
+			var status = err.response.status;
+
+			// CSRF token mismatch
+			if(status === 419){
+        // 現在のページをリダイレクトさせる
+				location.href = location.pathname;
+			}else{
+				alert("削除できませんでした。やり直してください。");
+			}
+
+		}).finally(function(){
+
+			// ボタンのクリックを解除する
+			$('#delete_task_btn').prop('disabled', false);
+
+			// ボタンのローディングアイコンを解除する
+			$('#delete_task_btn').empty();
+			$('#delete_task_btn').text("削除");
 
 		});
 	});

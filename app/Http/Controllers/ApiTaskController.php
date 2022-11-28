@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Task;
 use Carbon\Carbon;
 
 class ApiTaskController extends Controller
@@ -104,7 +105,7 @@ class ApiTaskController extends Controller
 
 		$validated = $request->validate([
 			'task' => 'required',
-			'task_id' => 'required',
+			'task_id' => 'required|numeric',
 		]);
 
 		$user = Auth::user();
@@ -128,7 +129,25 @@ class ApiTaskController extends Controller
 		タスクを削除
 		@return
 	*/
-	public function delete_task(){
+	public function delete_task(Request $request){
+		$task_id = $request->input('task_id');
 
+		$validated = $request->validate([
+			'task_id' => 'required|numeric',
+		]);
+
+		// ログインしていない場合どうなのか？
+    // もしタスクIDが不正だった場合はどうなるのか？
+		$deleted = Task::where('id', $task_id)-> delete();
+
+		if($deleted !== 1){
+			return response()->json([
+				'message' => 'not found',
+			]);
+		}
+
+		return response()->json([
+			'message' => 'success',
+		]);
 	}
 }
