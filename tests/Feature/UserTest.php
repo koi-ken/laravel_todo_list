@@ -251,4 +251,80 @@ class UserTest extends TestCase
 				$response->assertStatus(302);
     }
 
+		/**
+		 * ログインした状態で設定ページへアクセスする
+		 *
+		 */
+		public function test_access_logined_settings(){
+			// ファクトリでユーザーデータを、属性のオーバーライドで作成する
+			$user = User::factory()->create([
+				'email' => $this->valid_email,
+				'username' => $this->valid_username,
+				'password' => Hash::make($this->valid_password),
+				'created_at' => Carbon::now(),
+			]);
+
+			$response = $this->actingAs($user, 'web')->get('/settings');
+
+			$response
+				->assertStatus(200)
+				->assertSee('ユーザー設定');
+		}
+
+		/**
+		 * ログインしていない状態で設定ページへアクセスする
+		 *
+		 */
+		public function test_access_not_logined_settings(){
+
+			$response = $this->get('/settings');
+
+			$response
+				->assertStatus(200)
+				->assertSee('トップページ');
+		}
+
+		/**
+		 * ログインした状態でユーザー情報を取得する
+		 *
+		 */
+		public function test_get_logined_userinfo(){
+
+			// ファクトリでユーザーデータを、属性のオーバーライドで作成する
+			$user = User::factory()->create([
+				'email' => $this->valid_email,
+				'username' => $this->valid_username,
+				'password' => Hash::make($this->valid_password),
+				'created_at' => Carbon::now(),
+			]);
+			$response = $this->actingAs($user)->getJson('/api/v1/fetch_userinfo');
+
+			$response
+				->assertStatus(200)
+				->assertExactJson([
+					'userinfo' => [
+						0 => [
+							'email' => $this->valid_email,
+							'username' => $this->valid_username,
+						],
+					],
+				]);
+
+		}
+
+		/**
+		 * ログインしていない状態でユーザー情報を取得する
+		 *
+		 */
+		public function test_get_not_logined_userinfo(){
+
+			$response = $this->getJson('/api/v1/fetch_userinfo');
+
+			$response
+				->assertStatus(401)
+				->assertExactJson([
+					'message' => 'Unauthenticated.',
+				]);
+
+		}
 }

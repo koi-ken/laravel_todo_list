@@ -309,16 +309,55 @@
 	});
 
 	$(window).on('load', function(){
-		var page = 1;
-		loading_data(page);
-		create_offcanvas();
-		create_modal();
+
+		if(location.pathname === '/'){
+			var page = 1;
+			loading_data(page);
+			create_offcanvas();
+			create_modal();
+		}else if(location.pathname === '/settings'){
+			loading_userinfo();
+		}
+
 	});
 
 	$('#loading_btn').on('click', function(){
 		var page = $('#loading_btn').data('page');
 		loading_data(page);
 	});
+
+  function loading_userinfo(){
+			axios.get('/api/v1/fetch_userinfo')
+			.then(function(res){
+				var userinfo = res.data.userinfo;
+
+				if(userinfo){
+					var email = userinfo[0].email;
+					var username = userinfo[0].username;
+
+					$('#userinfo_email').val(email);
+					$('#userinfo_username').val(username);
+
+					$('#userinfo_block').css('display', 'block');
+					$('#loading_block').css('display','none');
+				}
+				
+			}).catch(function(err){
+
+				var status = err.response.status;
+
+				// CSRF token mismatch
+				if(status === 419){
+	        // 現在のページをリダイレクトさせる
+					location.href = location.pathname;
+				}else{
+					alert("読み込みできませんでした。やり直してください。");
+				}
+
+			}).finally(function(){
+
+			});
+	}
 
 	function loading_data(page){
 		if($('#task_list').length){

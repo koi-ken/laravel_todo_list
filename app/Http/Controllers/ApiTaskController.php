@@ -136,8 +136,6 @@ class ApiTaskController extends Controller
 			'task_id' => 'required|numeric',
 		]);
 
-		// ログインしていない場合どうなのか？
-    // もしタスクIDが不正だった場合はどうなるのか？
 		$deleted = Task::where('id', $task_id)-> delete();
 
 		if($deleted !== 1){

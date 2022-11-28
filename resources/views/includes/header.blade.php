@@ -21,6 +21,11 @@
 				<li class="nav-item">
 					<a href="/signup">新規登録</a>
 				</li>
+				@auth
+				<li class="nav-item">
+					<a href="/settings">ユーザー設定</a>
+				</li>
+				@endauth
 			</ul>
 		</div>
 	</div>

@@ -90,10 +90,19 @@ class ApiUserController extends Controller
 	/**
 		ユーザー情報を取得
 		@param
-		@return void
+		@return Response
 	*/
 	public function fetch_userinfo(){
+		$user = Auth::user();
 
+		$users = DB::table('users')
+								->select('email', 'username')
+								->where('id', $user->id)
+								->get();
+
+		return response()->json([
+			'userinfo' => $users,
+		]);
 	}
 
 	/**

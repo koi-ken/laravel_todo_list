@@ -12,11 +12,11 @@ class TaskController extends Controller
 		@retrun void
 	*/
 	public function task_list(){
-		if(Auth::check()){
-			return view('pages.task_list');
-		}else{
+		if(!Auth::check()){
 			return view('pages.toppage');
 		}
+
+		return view('pages.task_list');
 	}
 
 

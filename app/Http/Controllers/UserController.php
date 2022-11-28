@@ -42,6 +42,6 @@ class UserController extends Controller
 		@return void
 	*/
 	public function settings(){
-
+		return view('pages.settings');
 	}
 }
