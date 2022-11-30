@@ -280,8 +280,8 @@ class UserTest extends TestCase
 			$response = $this->get('/settings');
 
 			$response
-				->assertStatus(200)
-				->assertSee('トップページ');
+				->assertStatus(302)
+				->assertSee('Redirecting to');
 		}
 
 		/**
@@ -316,7 +316,7 @@ class UserTest extends TestCase
 		 * ログインしていない状態でユーザー情報を取得する
 		 *
 		 */
-		public function test_get_not_logined_userinfo(){
+		public function test_not_login_get_userinfo(){
 
 			$response = $this->getJson('/api/v1/fetch_userinfo');
 
@@ -326,5 +326,141 @@ class UserTest extends TestCase
 					'message' => 'Unauthenticated.',
 				]);
 
+		}
+
+		/**
+		 * ログインした状態でユーザー情報を編集する
+		 *
+		 */
+		public function test_logined_edit_userinfo(){
+
+			$user = User::factory()->create([
+				'email' => $this->valid_email,
+				'username' => $this->valid_username,
+				'password' => Hash::make($this->valid_password),
+				'created_at' => Carbon::now(),
+			]);
+
+			// ユーザー名だけ変更
+			$response = $this->actingAs($user)->postJson('/api/v1/edit_userinfo',[
+				'email' => $this->valid_email,
+				'username' => 'dog',
+			]);
+
+			$response
+				->assertStatus(200)
+				->assertExactJson([
+					'message' => 'success',
+				]);
+
+			//メールアドレスだけ変更
+			$response = $this->actingAs($user)->postJson('/api/v1/edit_userinfo',[
+				'email' => 'dogvalidemail@google.com',
+				'username' => 'dog',
+			]);
+
+			$response
+				->assertStatus(200)
+				->assertExactJson([
+					'message' => 'success',
+				]);
+
+			// メールアドレスとユーザー名の両方を変更
+			$response = $this->actingAs($user)->postJson('/api/v1/edit_userinfo',[
+				'email' => 'catemail@google.com',
+				'username' => 'cat',
+			]);
+
+			$response
+				->assertStatus(200)
+				->assertExactJson([
+					'message' => 'success',
+				]);
+
+		}
+
+		/**
+		 * ログインした状態で不正なユーザー情報を編集する
+		 *
+		 */
+		public function test_logined_edit_invalid_userinfo(){
+
+			$user = User::factory()->create([
+				'email' => $this->valid_email,
+				'username' => $this->valid_username,
+				'password' => Hash::make($this->valid_password),
+				'created_at' => Carbon::now(),
+			]);
+
+			$email_cases = [
+				'',
+				$this->valid_email,
+				$this->invalid_email
+			];
+
+			$username_cases = [
+				'',
+				$this->valid_username,
+				$this->invalid_password_more,
+				$this->invalid_username_non_alpha
+			];
+
+			for($i = 0; $i < count($email_cases); $i++){
+				for($j = 0; $j < count($username_cases); $j++){
+					$response = $this->actingAs($user)->postJson('/api/v1/edit_userinfo',[
+						'email' => $email_cases[$i],
+						'username' => $username_cases[$j],
+					]);
+
+					if($email_cases[$i] === $this->valid_email && $username_cases[$j] === $this->valid_username){
+						$response->assertStatus(200);
+					}else{
+						$response->assertStatus(422);
+					}
+				}
+			}
+		}
+
+
+		/**
+		 * ログインしない状態で正しい or 不正なユーザー情報を編集する
+		 *
+		 */
+		public function test_not_login_edit_invalid_userinfo(){
+
+			$user = User::factory()->create([
+				'email' => $this->valid_email,
+				'username' => $this->valid_username,
+				'password' => Hash::make($this->valid_password),
+				'created_at' => Carbon::now(),
+			]);
+
+			$email_cases = [
+				'',
+				$this->valid_email,
+				$this->invalid_email
+			];
+
+			$username_cases = [
+				'',
+				$this->valid_username,
+				$this->invalid_password_more,
+				$this->invalid_username_non_alpha
+			];
+
+			for($i = 0; $i < count($email_cases); $i++){
+				for($j = 0; $j < count($username_cases); $j++){
+					$response = $this->postJson('/api/v1/edit_userinfo',[
+						'email' => $email_cases[$i],
+						'username' => $username_cases[$j],
+					]);
+
+					$response
+						->assertStatus(401)
+						->assertExactJson([
+							'message' => 'Unauthenticated.',
+						]);
+				}
+			}
 		}
 }

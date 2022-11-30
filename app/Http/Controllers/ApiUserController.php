@@ -109,8 +109,45 @@ class ApiUserController extends Controller
 		ユーザー情報を編集
 		@return void
 	*/
-	public function edit_userinfo(){
+	public function edit_userinfo(Request $request){
+    // Authファサードは読み込みで1回使うと、2回目は取得とれない？
+		$user = Auth::user();
 
+		$email = $request->input('email');
+		$username = $request->input('username');
+
+		// 変更したデータだけをバリデーションする
+		$validate_rules = [];
+
+		if($email !== $user->email){
+			$validate_rules['email'] = 'required|unique:users|email:rfc,dns';
+		}
+
+		if($username !== $user->username){
+			$validate_rules['username'] = 'required|unique:users|regex:/^[a-zA-z0-9]{1,36}$/i';
+		}
+
+		if(count($validate_rules) === 0){
+			return response()->json([
+				'message' => 'same userinfo'
+			]);
+		}
+
+		$validated = $request->validate($validate_rules);
+
+		$affected = DB::table('users')
+								->where('id', $user->id)
+								->update(['email' => $email, 'username' => $username]);
+
+		if($affected === 0){
+			return response()->json([
+				'message' => 'not found',
+			]);
+		}
+
+		return response()->json([
+			'message' => 'success',
+		]);
 	}
 
 	/**

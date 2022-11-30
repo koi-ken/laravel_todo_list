@@ -12,16 +12,28 @@
 				<label class="col-sm-3 col-form-label">Eメール</label>
 				<div class="col-sm-9">
 					<input type="text" class="form-control" id="userinfo_email" />
+					<div class="valid-feedback">
+						OKです
+					</div>
+					<div class="invalid-feedback">
+
+					</div>
 				</div>
 			</div>
 			<div class="mb-3 row">
 				<label class="col-sm-3 col-form-label">ユーザー名</label>
 				<div class="col-sm-9">
 					<input type="text" class="form-control"  id="userinfo_username" />
+					<div class="valid-feedback">
+						OKです
+					</div>
+					<div class="invalid-feedback">
+
+					</div>
 				</div>
 			</div>
 			<div class="d-flex">
-				<button type="button" id="edit_settings_btn" class="btn btn-primary ms-auto">保存</button>
+				<button type="button" id="edit_userinfo_btn" class="btn btn-primary ms-auto">保存</button>
 			</div>
 		</form>
 	</div>

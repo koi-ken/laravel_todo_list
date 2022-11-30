@@ -647,4 +647,94 @@
 
 		});
 	});
+
+	$(document).on('click', '#edit_userinfo_btn', function(){
+
+		$('#edit_userinfo_btn').prop('disabled', true);
+
+		// ボタンにローディングアイコンを追加する
+		$('#edit_userinfo_btn').text("");
+		$('<span>').attr({
+			class: 'spinner-border spinner-border-sm',
+			role: 'status',
+			ariaHidden: 'true',
+		}).appendTo('#edit_userinfo_btn');
+
+		var email = $('#userinfo_email').val();
+		var username = $('#userinfo_username').val();
+		var csrf_token = $('meta[name="csrf-token"]').attr('content');
+
+		axios.post('/api/v1/edit_userinfo',{
+			email: email,
+			username: username,
+			"X-CSRF-TOKEN": csrf_token,
+		}).then(function(res){
+			var message = res.data.message;
+
+			if(message === 'success' || message === 'same userinfo'){
+					$('#userinfo_email').removeClass('is-invalid');
+					$('#userinfo_email').addClass('is-valid');
+
+					$('#userinfo_username').removeClass('is-invalid');
+					$('#userinfo_username').addClass('is-valid');
+			}else if(message === 'not found'){
+				alert("編集できませんでした。やり直してください。");
+			}
+
+		}).catch(function(err){
+
+			var status = err.response.status;
+
+			// CSRF token mismatch
+			if(status === 419){
+        // 現在のページをリダイレクトさせる
+				location.href = location.pathname;
+
+			// 不正な入力
+			}else if(status === 422){
+				var errors = err.response.data.errors;
+				
+				if(errors.email){
+					$('#userinfo_email').removeClass('is-valid');
+					$('#userinfo_email').addClass('is-invalid');
+					if( errors.email[0] === 'The email must be a valid email address.'){
+						$('.invalid-feedback').eq(0).html('Eメールが不正な形式です');
+					}else if(errors.email[0] === 'The email has already been taken.'){
+						$('.invalid-feedback').eq(0).html('Eメールはすでに登録されています');
+					}else if(errors.email[0] === 'The email field is required.'){
+						$('.invalid-feedback').eq(0).html('Eメールが空です');
+					}
+				}else{
+					$('#userinfo_email').removeClass('is-invalid');
+					$('#userinfo_email').addClass('is-valid');
+				}
+
+				if(errors.username){
+					$('#userinfo_username').removeClass('is-valid');
+					$('#userinfo_username').addClass('is-invalid');
+					if(errors.username[0] === 'The username has already been taken.'){
+						$('.invalid-feedback').eq(1).html('ユーザー名はすでに登録されています');
+					}else if(errors.username[0] === 'The username field is required.'){
+						$('.invalid-feedback').eq(1).html('ユーザー名が空です');
+					}else if(errors.username[0] === 'The username format is invalid.'){
+						$('.invalid-feedback').eq(1).html('ユーザー名は半角英数字36字以内で入力');
+					}
+				}else{
+					$('#userinfo_username').removeClass('is-invalid');
+					$('#userinfo_username').addClass('is-valid');
+				}
+			}else{
+				alert("編集できませんでした。やり直してください。");
+			}
+
+		}).finally(function(){
+
+			// ボタンのクリックを解除する
+			$('#edit_userinfo_btn').prop('disabled', false);
+
+			// ボタンのローディングアイコンを解除する
+			$('#edit_userinfo_btn').empty();
+			$('#edit_userinfo_btn').text("保存");
+		});
+	});
 })();
