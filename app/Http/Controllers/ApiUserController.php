@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -50,7 +51,7 @@ class ApiUserController extends Controller
 	/**
 		ログインを完了させる
 		@param \Illuminate\Http\Request $request
-		@return void
+		@return Response
 	*/
 	public function login(Request $request){
 		$email_or_username = $request->input('email_or_username');
@@ -107,10 +108,9 @@ class ApiUserController extends Controller
 
 	/**
 		ユーザー情報を編集
-		@return void
+		@return Response
 	*/
 	public function edit_userinfo(Request $request){
-    // Authファサードは読み込みで1回使うと、2回目は取得とれない？
 		$user = Auth::user();
 
 		$email = $request->input('email');
@@ -152,9 +152,16 @@ class ApiUserController extends Controller
 
 	/**
 		ユーザー情報を削除
-		@return void
+		@return Response
 	*/
 	public function delete_userinfo(){
+		$user = Auth::user();
 
+		$deleted = DB::table('users')->where('id', $user->id)->delete();
+
+		return response()->json([
+			'message' => 'success',
+			'deleted' => $deleted,
+		]);
 	}
 }

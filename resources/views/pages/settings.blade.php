@@ -36,6 +36,22 @@
 				<button type="button" id="edit_userinfo_btn" class="btn btn-primary ms-auto">保存</button>
 			</div>
 		</form>
+		<div class="border-top mt-4">
+		</div>
+		<div class="my-2">
+			<h5 class="my-3">ユーザー情報削除</h5>
+			<form>
+				<div class="col mb-3">
+					アカウントを削除する場合、以下のフォームに『<label class="form-label fw-bold" id="random-string"></label>』と入力してから、削除ボタンを押してください。
+				</div>
+				<div class="col mb-3">
+					<input type="text" class="form-control" id="input-random-string">
+				</div>
+				<div class="d-flex">
+					<button type="button" id="delete_userinfo_btn" class="btn btn-danger ms-auto" disabled>削除</button>
+				</div>
+			</form>
+		</div>
 	</div>
 	<div id="loading_block" class="mx-auto" style="width:40px;">
 		<div class="spinner-border" role="status">

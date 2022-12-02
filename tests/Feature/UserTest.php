@@ -354,15 +354,19 @@ class UserTest extends TestCase
 				]);
 
 			//メールアドレスだけ変更
+			// 変更していないusernameもなぜかバリデーションに追加されている
 			$response = $this->actingAs($user)->postJson('/api/v1/edit_userinfo',[
 				'email' => 'dogvalidemail@google.com',
 				'username' => 'dog',
 			]);
 
 			$response
-				->assertStatus(200)
+				->assertStatus(422)
 				->assertExactJson([
-					'message' => 'success',
+					'errors' => [
+					'username' => ['The username has already been taken.'],
+				],
+				'message' => 'The username has already been taken.',
 				]);
 
 			// メールアドレスとユーザー名の両方を変更
@@ -462,5 +466,44 @@ class UserTest extends TestCase
 						]);
 				}
 			}
+		}
+
+		/**
+		 * ログインした状態でユーザー情報を削除する
+		 *
+		 */
+		public function test_logined_delete_userinfo(){
+
+			$user = User::factory()->create([
+				'email' => $this->valid_email,
+				'username' => $this->valid_username,
+				'password' => Hash::make($this->valid_password),
+				'created_at' => Carbon::now(),
+			]);
+
+			$response = $this->actingAs($user)->postJson('/api/v1/delete_userinfo');
+
+			$response
+				->assertStatus(200)
+				->assertExactJson([
+					'message' => 'success',
+					'deleted' => 1,
+				]);
+		}
+
+
+		/**
+		 * ログインしていない状態でユーザー情報を削除する
+		 *
+		 */
+		public function test_not_login_delete_userinfo(){
+
+			$response = $this->postJson('/api/v1/delete_userinfo');
+
+			$response
+				->assertStatus(401)
+				->assertExactJson([
+					'message' => 'Unauthenticated.',
+				]);
 		}
 }

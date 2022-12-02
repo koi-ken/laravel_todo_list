@@ -36,3 +36,4 @@ Route::post('/api/v1/edit_task', [ApiTaskController::class, 'edit_task'])->middl
 Route::post('/api/v1/delete_task', [ApiTaskController::class, 'delete_task'])->middleware('auth');
 Route::get('/api/v1/fetch_userinfo', [ApiUserController::class, 'fetch_userinfo'])->middleware('auth');
 Route::post('/api/v1/edit_userinfo', [ApiUserController::class, 'edit_userinfo'])->middleware('auth');
+Route::post('/api/v1/delete_userinfo', [ApiUserController::class, 'delete_userinfo'])->middleware('auth');

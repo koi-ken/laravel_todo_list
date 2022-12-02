@@ -332,6 +332,10 @@
 				var userinfo = res.data.userinfo;
 
 				if(userinfo){
+					var generate_str = generate_random_string(15);
+					console.log(generate_str);
+					$('#random-string').text(generate_str);
+
 					var email = userinfo[0].email;
 					var username = userinfo[0].username;
 
@@ -509,6 +513,18 @@
 		');
 
 		myModal = new bootstrap.Modal(document.getElementById('deleteModal'), null)
+	}
+
+  function generate_random_string(str_num){
+		var result = '';
+		var ascii_code = 0;
+
+		for(var i = 0; i < str_num; i++){
+			ascii_code = Math.floor((Math.random() * (122 - 97)) + 97);
+			result = result + String.fromCharCode(ascii_code);
+		}
+
+		return result;
 	}
 
 	$(document).on('click', '#edit_task_btn', function(){
@@ -736,5 +752,58 @@
 			$('#edit_userinfo_btn').empty();
 			$('#edit_userinfo_btn').text("保存");
 		});
+	});
+
+	$(document).on('keypress', '#input-random-string', function(){
+		check_textbox();
+	});
+
+	$(document).on('keyup', '#input-random-string', function(){
+		check_textbox();
+	});
+
+	function check_textbox(){
+		if($('#input-random-string').val() === $('#random-string').text()){
+			$('#delete_userinfo_btn').prop('disabled', false);
+		}else{
+			$('#delete_userinfo_btn').prop('disabled', true);
+		}
+	}
+
+	$(document).on('click', '#delete_userinfo_btn', function(){
+
+		$('#delete_userinfo_btn').prop('disabled', true);
+
+		// ボタンにローディングアイコンを追加する
+		$('#delete_userinfo_btn').text("");
+		$('<span>').attr({
+			class: 'spinner-border spinner-border-sm',
+			role: 'status',
+			ariaHidden: 'true',
+		}).appendTo('#delete_userinfo_btn');
+
+		var csrf_token = $('meta[name="csrf-token"]').attr('content');
+
+		axios.post('/api/v1/delete_userinfo',{
+			"X-CSRF-TOKEN": csrf_token,
+		}).then(function(res){
+			var message = res.data.message;
+
+			if(message === 'success'){
+				location.href = "/";
+			}
+		}).catch(function(err){
+
+
+		}).finally(function(){
+
+			// ボタンのクリックを解除する
+			$('#delete_userinfo_btn').prop('disabled', false);
+
+			// ボタンのローディングアイコンを解除する
+			$('#delete_userinfo_btn').empty();
+			$('#delete_userinfo_btn').text("削除");
+		});
+
 	});
 })();

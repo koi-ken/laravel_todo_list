@@ -16,7 +16,18 @@ class User extends Authenticatable
 			'remember_token'
 		];
 
-	public function tasks(){
+	public function tasks()
+	{
 		return $this->hasMany(Task::class);
+	}
+
+	public static function boot()
+	{
+		parent::boot();
+
+		static::deleting(function ($user)
+		{
+			$user->tasks()->delete();
+		});
 	}
 }
