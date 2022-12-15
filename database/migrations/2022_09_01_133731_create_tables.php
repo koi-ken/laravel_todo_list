@@ -15,9 +15,9 @@ return new class extends Migration
     {
 	    Schema::create('users', function (Blueprint $table) {
 	        $table->increments('id');
-	        $table->string('email', 255)->unique();
-	        $table->string('username',255)->unique();
-	        $table->string('password', 255)->nullable();
+	        $table->string('email', 190)->unique();
+	        $table->string('username',190)->unique();
+	        $table->string('password', 190)->nullable();
 	        $table->text('profile')->nullable();
 	        $table->rememberToken();
 	        $table->boolean('delete_flug')->default(false);
