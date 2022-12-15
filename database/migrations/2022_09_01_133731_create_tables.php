@@ -34,7 +34,8 @@ return new class extends Migration
 	        $table->timestamp('created_at', $precision=0);
 	        $table->timestamp('updated_at', $precision=0)->nullable();
 	        $table->timestamp('deleted_at', $precision=0)->nullable();
-	        $table->unsignedBigInteger('user_id');
+	        //$table->unsignedBigInteger('user_id');
+					$table->unsignedInteger('user_id');
 	        $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
 	    });
 
